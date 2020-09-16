@@ -25,7 +25,7 @@ from App import model
 import csv
 from DISClib.ADT import list as lt
 from DISClib.DataStructures import listiterator as it
-
+from time import process_time 
 
 
 """
@@ -43,46 +43,67 @@ def iniciarcatalog():
     catalogo=model.newCatalog()
     return catalogo
 
-def loadDirectores():
-    lst=lt.newList("ARRAY_LIST")
+
+def loadDirectores1():
+    lst=[]
     dialect = csv.excel()
     dialect.delimiter=";"
-    with open(  cf.data_dir + "MoviesCastingRaw-small.csv", encoding="utf-8") as csvfile:
+    with open(  cf.data_dir + "AllMoviesCastingRaw.csv", encoding="utf-8") as csvfile:
             row = csv.DictReader(csvfile, dialect=dialect)
             for elemento in row: 
-                lt.addLast(lst,elemento)
-    
+                lst.append(elemento)
     return lst
 
-
-def loadmovies(catalog,lista):
+def loadmovies(catalog):
+    t1= process_time()
     dialect = csv.excel()
     dialect.delimiter=";"
-    with open(  cf.data_dir + "SmallMoviesDetailsCleaned.csv", encoding="utf-8") as csvfile:
+    with open(  cf.data_dir + "AllMoviesDetailsCleaned.csv", encoding="utf-8") as csvfile:
         row = csv.DictReader(csvfile, dialect=dialect)
         for pelicula in row: 
             lt.addLast(catalog["Peliculas"],pelicula)
-            iterador= it.newIterator(lista)
-            while it.hasNext(iterador) :
-                element=it.next(iterador)
-                model.addPeliculaActor(catalog,element,pelicula)
-            model.addGenero(catalog,pelicula,pelicula)
             
+            model.addProductora(catalog,pelicula)
+    t2=process_time()
+    
                    
-                
-            
+    
+
+def load_Directores_peliculas1(catalog,lista):
+    t1= process_time()
+    dialect = csv.excel()
+    dialect.delimiter=";"
+    with open(  cf.data_dir + "AllMoviesDetailsCleaned.csv", encoding="utf-8") as csvfile:
+        row = csv.DictReader(csvfile, dialect=dialect)
+        i=0
+        j=0
+        for pelicula in row: 
+            ya=False
+            while i<len(lista) and not ya:
+                element=lista[i]
+                ya=model.addPeliculaActor(catalog,element,pelicula)
+                i+=1
+            j+=1
+            i=j
+    t2=process_time()
+      
+
 
 def loadDatos(catalog):
-    lista=loadDirectores()
-    loadmovies(catalog,lista)
+    lista=loadDirectores1()
+    loadmovies(catalog)
+    load_Directores_peliculas1(catalog,lista)
     
 def darDirector(catalog,nombre_director):
-    model.darAutor(catalog,nombre_director)
+    director=model.darAutor(catalog,nombre_director)
+    return director
 
 def darGenero(catalog,nombre_genero):
     model.darGenero(catalog,nombre_genero)
 
-
+def darProductora(catalog,nombre_productora):
+    productora=model.darproductora(catalog,nombre_productora)
+    return productora
 # ___________________________________________________
 #  Inicializacion del catalogo
 # ___________________________________________________

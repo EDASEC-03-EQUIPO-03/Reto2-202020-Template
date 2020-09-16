@@ -25,6 +25,8 @@ from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.DataStructures import listiterator as it
 assert config
+from time import process_time 
+
 
 """
 En este archivo definimos los TADs que vamos a usar,
@@ -42,12 +44,32 @@ def comparePeliculas (nombre_pelicula, pelicula):
         return 0
     else:
         return 1
-            
-def compareDirectores (Nombre_director, director):
-    if (Nombre_director == director['Nombre'] ):
+def compareDirectores(keyname, director):
+    """
+    Compara dos nombres de autor. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    Directorentry = me.getKey(director)
+    if (keyname == Directorentry):
         return 0
-    else:
+    elif (keyname > Directorentry):
         return 1
+    else:
+        return -1
+            
+def compareProductoras(keyname, Productora):
+    """
+    Compara dos nombres de autor. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    Productoraentry = me.getKey(Productora)
+    if (keyname == Productoraentry):
+        return 0
+    elif (keyname > Productoraentry):
+        return 1
+    else:
+        return -1
+            
 def compareGeners(nombre_genero, genero):
     if nombre_genero == genero["Nombre_genero"]:
         return 0
@@ -58,10 +80,19 @@ def newCatalog():
    
     catalog = {'Peliculas': None,
                'Directores': None,
-               'Generos': None}
+               'Generos': None,
+               "Productoras":None}
 
     catalog['Peliculas'] = lt.newList('ARRAY_LIST', cmpfunction=comparePeliculas)
-    catalog['Directores'] = lt.newList("ARRAY_LIST", cmpfunction=compareDirectores)
+    catalog['Directores'] =  mp.newMap(164527,
+                                   maptype='CHAINING',
+                                   loadfactor=2,
+                                   comparefunction=compareDirectores)
+    catalog['Productoras'] =  mp.newMap(164527,
+                                   maptype='CHAINING',
+                                   loadfactor=2,
+                                   comparefunction=compareProductoras)
+
     catalog['Generos'] = lt.newList("ARRAY_LIST", cmpfunction=compareGeners)
 
 
@@ -74,6 +105,13 @@ def nuevo_director(nombre):
     director['Peliculas'] = lt.newList('ARRAY_LIST')
     return director
 
+def nueva_productora(nombre_productora):
+
+    Productora={'Nombre': "", "Peliculas": None,  "Vote_average": 0}
+    Productora["Nombre"]=nombre_productora
+    Productora["Peliculas"]= lt.newList("ARRAY_LIST")
+    return Productora
+
 def nuevo_genero(nombre_genero):
     
     genero = {'Nombre_genero': "", "Peliculas_genero": None, "Vote_average": 0}
@@ -82,18 +120,19 @@ def nuevo_genero(nombre_genero):
     return genero 
 
 def addPeliculaActor(catalog, director_lista, pelicula ):
-    
+    ya=False
     nombre_director=director_lista["director_name"]
     id1=director_lista["id"]
-    id2=pelicula["id"]
+    id2=pelicula["\ufeffid"]
     if id1==id2:
         Directores = catalog['Directores']
-        existe_director = lt.isPresent(Directores,nombre_director)
-        if existe_director > 0:
-            director = lt.getElement(Directores,existe_director)
+        existe_director = mp.contains(Directores,nombre_director)
+        if existe_director:
+            entry = mp.get(Directores,nombre_director)
+            director= me.getValue(entry)
         else:
             director = nuevo_director(nombre_director)
-            lt.addLast(Directores,director)   
+            mp.put(Directores,nombre_director,director)   
 
         lt.addLast(director['Peliculas'], pelicula)
 
@@ -103,6 +142,29 @@ def addPeliculaActor(catalog, director_lista, pelicula ):
             director['Vote_average'] = float(pelicualav)
         else:
             director['Vote_average'] = (directorav + float(pelicualav)) / 2
+        ya=True 
+    return ya 
+
+def addProductora(catalog, pelicula ):
+    
+    Productora=pelicula["production_companies"]
+    productoracatalog=catalog["Productoras"]
+    existe_productora= mp.contains(productoracatalog,Productora)
+    if existe_productora:
+        entry= mp.get(productoracatalog,Productora)
+        productoraes= me.getValue(entry)
+    else:
+        productoraes= nueva_productora(Productora)
+        mp.put(productoracatalog,Productora,productoraes)
+
+    lt.addLast(productoraes["Peliculas"],pelicula)
+    Productoraav= productoraes["Vote_average"]
+    pelicualav = pelicula['vote_average']
+    if (Productoraav == 0):
+        productoraes["Vote_average"]= float(pelicualav)
+    else:
+        productoraes["Vote_average"]= (Productoraav+float(pelicualav)) / 2
+
 
 def addGenero(catalog,lista_genero,pelicula):
         generos=lista_genero["genres"]
@@ -126,14 +188,29 @@ def addGenero(catalog,lista_genero,pelicula):
 
 
 def darAutor(catalog,nombre_director):
-    existe_director = lt.isPresent(catalog["Directores"],nombre_director)
-    autor=lt.getElement(catalog["Directores"],existe_director)
-    print(autor)
+    t1=process_time()
+    directores=catalog["Directores"]
+    entry= mp.get(directores,nombre_director)
+    if entry:
+        return me.getValue(entry)
+    else:
+        return 1
+    t2=process_time()
 
 def darGenero(catalog,nombre_genero):
     existe_genero= lt.isPresent(catalog["Generos"],nombre_genero)
     genero=lt.getElement(catalog["Generos"],existe_genero)
-    print("Se encontraron",lt.size(genero["Peliculas_genero"]),"del genero",nombre_genero,"\n")
+
+def darproductora(catalog,nombre_productora):
+    t1=process_time()
+    entry= mp.get(catalog["Productoras"],nombre_productora)
+    productora=None
+    if entry:
+        productora= me.getValue(entry)
+        t2=process_time()
+    return productora
+    
+   
 
 # Funciones para agregar informacion al catalogo
 
