@@ -55,22 +55,23 @@ def loadDirectores1():
     return lst
 
 def loadmovies(catalog):
-    t1= process_time()
+    
     dialect = csv.excel()
     dialect.delimiter=";"
+
     with open(  cf.data_dir + "AllMoviesDetailsCleaned.csv", encoding="utf-8") as csvfile:
         row = csv.DictReader(csvfile, dialect=dialect)
         for pelicula in row: 
             lt.addLast(catalog["Peliculas"],pelicula)
             
             model.addProductora(catalog,pelicula)
-    t2=process_time()
+            model.addGenero(catalog,pelicula)
+            
     
                    
     
 
 def load_Directores_peliculas1(catalog,lista):
-    t1= process_time()
     dialect = csv.excel()
     dialect.delimiter=";"
     with open(  cf.data_dir + "AllMoviesDetailsCleaned.csv", encoding="utf-8") as csvfile:
@@ -81,11 +82,12 @@ def load_Directores_peliculas1(catalog,lista):
             ya=False
             while i<len(lista) and not ya:
                 element=lista[i]
-                ya=model.addPeliculaActor(catalog,element,pelicula)
+                ya=model.addPeliculaDirector(catalog,element,pelicula)
+                model.addPeliculaPais(catalog,element,pelicula)
+                model.addPeliculaActor(catalog,element,pelicula)
                 i+=1
             j+=1
             i=j
-    t2=process_time()
       
 
 
@@ -99,11 +101,35 @@ def darDirector(catalog,nombre_director):
     return director
 
 def darGenero(catalog,nombre_genero):
-    model.darGenero(catalog,nombre_genero)
+    genero=model.darGenero(catalog,nombre_genero)
+    return genero
 
 def darProductora(catalog,nombre_productora):
     productora=model.darproductora(catalog,nombre_productora)
     return productora
+def darpais(catalog,nombre_pais):
+    pais=model.darpais(catalog,nombre_pais)
+    return pais
+
+def darActores(catalog,nombre):
+    actor,director=model.darActor(catalog,nombre)
+    
+    return actor,director
+
+def buscar_Actor(catalog,nombre):
+    #se intento la funcion buscar_Actor como alternativa para hacer mas eficiente el codigo, sin embargo no funciono.
+    Actor=model.buscar_actor(nombre,catalog)
+    directores=Actor["Directores"]
+    mayor=0
+    mejor=""
+    iterador= it.newIterator(directores)
+    while it.hasNext(iterador):
+        element=it.next(iterador)
+        if element["Cantidad"]>=mayor:
+            mayor=element["Cantidad"]
+            mejor=element["Nombre"]
+    return Actor,mejor
+
 # ___________________________________________________
 #  Inicializacion del catalogo
 # ___________________________________________________
