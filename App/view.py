@@ -132,7 +132,7 @@ while True:
     
     elif int(inputs[0])==7:
         nombre=input("Ingrese el nombre de el Actor que desea conocer:\n")
-        actor= controller.buscar_Actor(catalog,nombre)
+        actor,mejor= controller.darActores(catalog,nombre)
         print("El Actor",nombre,"tiene",lt.size(actor["Peliculas"]),"peliculas las cuales son:","\n")
         iterador= it.newIterator(actor["Peliculas"])
         
@@ -141,7 +141,7 @@ while True:
             element=it.next(iterador)
             nombre=element["original_title"]
             print(nombre)
-        print("El director con mas colaboraciones es:",actor["Directores"],"\n")
+        print("El director con mas colaboraciones es:",mejor,"\n")
     else:
         sys.exit(0)
 sys.exit(0)

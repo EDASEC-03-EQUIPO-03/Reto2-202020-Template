@@ -54,7 +54,7 @@ def loadDirectores1():
                 lst.append(elemento)
     return lst
 
-def loadmovies(catalog,numero):
+def loadmovies(catalog):
     
     dialect = csv.excel()
     dialect.delimiter=";"
@@ -71,7 +71,7 @@ def loadmovies(catalog,numero):
                    
     
 
-def load_Directores_peliculas1(catalog,lista,numero):
+def load_Directores_peliculas1(catalog,lista):
     dialect = csv.excel()
     dialect.delimiter=";"
     with open(  cf.data_dir + "AllMoviesDetailsCleaned.csv", encoding="utf-8") as csvfile:
@@ -113,11 +113,23 @@ def darpais(catalog,nombre_pais):
 
 def darActores(catalog,nombre):
     actor,director=model.darActor(catalog,nombre)
+    
     return actor,director
 
 def buscar_Actor(catalog,nombre):
+    #se intento la funcion buscar_Actor como alternativa para hacer mas eficiente el codigo, sin embargo no funciono.
     Actor=model.buscar_actor(nombre,catalog)
-    return Actor
+    directores=Actor["Directores"]
+    mayor=0
+    mejor=""
+    iterador= it.newIterator(directores)
+    while it.hasNext(iterador):
+        element=it.next(iterador)
+        if element["Cantidad"]>=mayor:
+            mayor=element["Cantidad"]
+            mejor=element["Nombre"]
+    return Actor,mejor
+
 # ___________________________________________________
 #  Inicializacion del catalogo
 # ___________________________________________________
