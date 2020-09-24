@@ -132,7 +132,7 @@ def newCatalog():
                                    loadfactor=2,
                                    comparefunction=comparePaises)
     
-    catalog['Actores'] = mp.newMap(64794,
+    catalog['Actores'] = mp.newMap(45777,
                                    maptype='CHAINING',
                                    loadfactor=2,
                                    comparefunction=compareActores)
